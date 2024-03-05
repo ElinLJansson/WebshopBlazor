@@ -1,0 +1,199 @@
+﻿@page "/shopping-cart"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@using Webshop.Client.Models
+@using Webshop.Data
+@using Microsoft.AspNetCore.Authorization
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@inject NavigationManager navManager
+@inject IShoppingCartDataAccess shoppingCartDataAccess
+@inject UserAccess userAccess
+@inject IProductDataAccess productDataAccess
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<h3>ShoppingCart</h3>
+
+<div class="d-flex justify-content-center">
+    <div class="w-50">
+        @if (Products.Count > 0)
+        {
+            @foreach (var shoppingCartEntry in ShoppingCart)
+            {
+                <ShoppingCartProductCard ShoppingCartProduct="@shoppingCartEntry"></ShoppingCartProductCard>
+            }
+
+
+            @if (RemovedProducts.Count > 0)
+            {
+                <h3 class="my-3">Sorry!</h3>
+                @foreach (var removedProduct in RemovedProducts)
+                {
+                    <ShoppingCartProductCard ShoppingCartProduct="@removedProduct" AddOpacity="@true"></ShoppingCartProductCard>
+                }
+            }
+
+            <EditForm FormName="CustumerForm" Model="@customerInformation" OnValidSubmit="@GoToConfirmation">
+                <DataAnnotationsValidator />
+                @*<ValidationSummary />*@
+
+                <h3>Personal Information</h3>
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <InputText id="name" class="form-control" @bind-Value="@customerInformation.Name" />
+                    <ValidationMessage For="@(() => customerInformation.Name)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <InputText id="email" class="form-control" @bind-Value="@customerInformation.Email" />
+                    <ValidationMessage For="@(() => customerInformation.Email)" />
+                </div>
+
+                <h3>Shipping Address</h3>
+                <div class="form-group">
+                    <label for="street">Street:</label>
+                    <InputText id="street" class="form-control" @bind-Value="@customerInformation.Street" />
+                    <ValidationMessage For="@(() => customerInformation.Street)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City:</label>
+                    <InputText id="city" class="form-control" @bind-Value="@customerInformation.City" />
+                    <ValidationMessage For="@(() => customerInformation.City)" />
+                </div>
+
+                <div class="form-group">
+                    <label for="zipCode">Zip Code:</label>
+                    <InputText id="zipCode" class="form-control" @bind-Value="@customerInformation.ZipCode" />
+                    <ValidationMessage For="@(() => customerInformation.ZipCode)" />
+                </div>
+
+                <button type="submit" class="btn btn-primary my-3">Submit</button>
+            </EditForm>
+
+        }
+        else
+        {
+            <h5 class="mt-3"><strong>Shopping Cart Empty</strong></h5>
+        }
+       
+    </div>
+</div>
+
+
+@code {
+    public List<Product>? Products { get; set; } = new();
+
+    List<(Product product, int quantity)> ShoppingCart = new();
+
+    List<(Product product, int quantity)> RemovedProducts = new();
+
+    private CustomerInformation customerInformation = new CustomerInformation();
+
+    OrderInformation orderInformation = new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Products = await shoppingCartDataAccess.GetProductsFromUserCartAsync();
+
+        foreach(var product in Products)
+        {
+            int quantity = await GetProductQuantityFromUserCart(product);
+            ShoppingCart.Add((product, quantity));
+        }
+
+        await RemoveAnyExcessProducts();
+    }
+
+    async Task RemoveAnyExcessProducts()
+    {
+        foreach (var cartProduct in ShoppingCart)
+        {
+            if (cartProduct.product.StockQuantity == 0)
+            {
+                //RemovedProducts.Add((shoppingCart.product, shoppingCart.quantity));
+                await shoppingCartDataAccess.RemoveProductFromUserCartAsync(cartProduct.product);
+            }
+            else if (cartProduct.product.StockQuantity < cartProduct.quantity)
+            {
+                var excessProductQuantity = cartProduct.quantity - cartProduct.product.StockQuantity;
+                //RemovedProducts.Add((shoppingCart.product, excessProductQuantity));
+
+                await shoppingCartDataAccess.ReduceProductQuantityFromUserCartAsync(cartProduct.product, excessProductQuantity);
+            }
+        }
+    }
+
+    public async Task GoToConfirmation()
+    {
+        orderInformation.Name = customerInformation.Name;
+        orderInformation.Email = customerInformation.Email;
+        orderInformation.Street = customerInformation.Street;
+        orderInformation.City = customerInformation.City;
+        orderInformation.ZipCode = customerInformation.ZipCode;
+
+        orderInformation.Products = ShoppingCart
+            .Select(i => new ClientSideProduct
+                {
+                    Id = i.product.Id,
+                    ProductNumber = i.product.ProductNumber,
+                    Name = i.product.Name,
+                    Price = i.product.Price,
+                    DiscountPercent = i.product.DiscountPercent,
+                    DiscountPrice = i.product.DiscountPrice,
+                    ImgURL = i.product.ImgURL,
+                    Quantity = i.quantity   
+                    
+                }).ToList();
+
+        var userId = await userAccess.GetCurrentUserId();
+
+        await sessionStorage.SetItemAsync(userId, orderInformation);
+
+        await EndShoppingSession();
+
+        navManager.NavigateTo("/order-confirmation");
+    }
+
+    async Task EndShoppingSession()
+    {
+        foreach (var shoppingCart in ShoppingCart)
+        {
+            await productDataAccess.UpdateProductStockQuantityAsync(shoppingCart.product, shoppingCart.quantity);
+        }
+
+        await shoppingCartDataAccess.EmptyUserCartAsync();
+    }
+
+    async Task<int> GetProductQuantityFromUserCart(Product product)
+    {
+        var quantity = await shoppingCartDataAccess.GetProductQuantityFromUserCartAsync(product);
+
+        return quantity;
+    }
+
+    public class CustomerInformation
+    {
+        [Required(ErrorMessage = "Please enter your name.")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "Please enter your email address.")]
+        [EmailAddress(ErrorMessage = "Please enter a valid email address.")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Please enter your street.")]
+        public string Street { get; set; }
+
+        [Required(ErrorMessage = "Please enter your city.")]
+        public string City { get; set; }
+
+        [Required(ErrorMessage = "Please enter your zip code.")]
+        public string ZipCode { get; set; }
+    }
+
+}
+
+

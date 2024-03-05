@@ -1,0 +1,27 @@
+﻿@page "/"
+@inject IProductDataAccess productDataAccess
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<h1>Webshop yes</h1>
+
+<div class="container">
+    <div class="d-flex flex-wrap">
+        @foreach (var product in products)
+        {
+            <ProductCard Product="@product"></ProductCard>
+        }
+    </div>
+</div>
+
+
+
+@code {
+    List<Product> products = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await productDataAccess.GetAllProductsAsync();
+    }
+}

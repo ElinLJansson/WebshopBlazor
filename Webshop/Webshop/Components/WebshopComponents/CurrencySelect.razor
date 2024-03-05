@@ -1,0 +1,94 @@
+﻿@inject HttpClient httpClient
+@rendermode InteractiveServer
+
+@if (Product.DiscountPercent is not null)
+{
+    <h2 class="text-decoration-line-through mx-3">@price.ToString("F") @currencySymbol</h2>
+    <h2 class="text-danger d-flex">
+        @discountPrice.GetValueOrDefault().ToString("F")
+        <select class="form-select form-select-lg me-3" @onchange="CalculatePrice">
+            <option selected value="USD">USD</option>
+            @foreach (var currency in CurrencyList)
+            {
+                <option value="@currency">@currency</option>
+            }
+        </select>
+    </h2>
+}
+else
+{
+    <h2 class="d-flex">
+        @price.ToString("F")
+        <select class="form-select form-select-lg" @onchange="CalculatePrice">
+            <option selected value="USD">USD</option>
+            @foreach (var currency in CurrencyList)
+            {
+                <option value="@currency">@currency</option>
+            }
+        </select>
+    </h2>
+
+}
+
+@code {
+    [Parameter]
+    public Product Product { get; set; } 
+
+    decimal price;
+    decimal? discountPrice;
+    string currencySymbol = "USD";
+
+    List<string> CurrencyList;
+
+    protected override void OnInitialized()
+    {       
+        httpClient.DefaultRequestHeaders.Add("X-Api-Key", "WLLYZOwzZ3/Rk6HMHdYwaA==rMrcm9FYDXwhgE4j");
+    }
+
+    protected override void OnParametersSet()
+    {
+        price = Product.Price;
+        discountPrice = Product.DiscountPrice;
+
+        CurrencyList = new List<string>
+        {
+            "EUR","GBP","DKK","PLN","JPY"
+        };
+    }
+
+    async Task<ExchangeRateResponse> GetExchangeRate(string currencySymbol)
+    {
+        var response = await httpClient.GetFromJsonAsync<ExchangeRateResponse>($"https://api.api-ninjas.com/v1/exchangerate?pair=USD_{currencySymbol}");
+
+        return response;
+    }
+
+    async Task CalculatePrice(ChangeEventArgs e)
+    {
+        currencySymbol = e.Value.ToString();
+
+        if(currencySymbol == "USD")
+        {
+            price = Product.Price;
+            discountPrice = Product.DiscountPrice;
+            Console.WriteLine("price: "+ price);
+        }
+        else
+        {
+            var exchangeRateResponse = await GetExchangeRate(currencySymbol);
+
+            price = Product.Price * exchangeRateResponse.exchange_rate;
+            discountPrice = Product.DiscountPrice * exchangeRateResponse.exchange_rate;
+        }
+        
+    }
+
+    private class ExchangeRateResponse
+    {
+        public string currency_pair { get; set; }
+        public decimal exchange_rate { get; set; }
+    }
+}
+
+    
+

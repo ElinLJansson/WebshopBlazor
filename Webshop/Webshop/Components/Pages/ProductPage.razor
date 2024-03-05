@@ -1,0 +1,82 @@
+﻿@page "/product/{Id:int}"
+@inject IProductDataAccess productDataAccess
+@rendermode InteractiveServer
+
+@if (NotFoundMessage.Length > 0)
+{
+    <h1>@NotFoundMessage</h1>
+}
+else
+{
+    <span><a href="/">Home</a> / <a href="product/@Id">@Product.Name</a></span>
+
+    <div class="d-flex justify-content-center">
+        <div class="w-50">
+            <img src="@Product.ImgURL" class="img-fluid mx-auto d-block shadow-lg mb-5" />
+            <div class="d-flex my-3">
+                @if (Product.DiscountPercent is not null)
+                {
+                    <h2 class="me-auto">@Product.Name</h2>
+                    <CurrencySelect Product="Product"></CurrencySelect>
+                }
+                else
+                {
+                    <h2 class="me-auto">@Product.Name</h2>
+                    <CurrencySelect Product="Product"></CurrencySelect>
+                }               
+            </div>
+
+
+            <dl class="row">
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@Product.Description</dd>
+
+                <dt class="col-sm-3">Product Number</dt>
+                <dd class="col-sm-9">@Product.ProductNumber.</dd>
+
+                <dt class="col-sm-3">Stock status</dt>
+                @if (Product.StockQuantity == 0)
+                {
+                    <dd class="col-sm-9 text-danger"><strong>Out of stock</strong></dd>
+                }
+                else if (Product.StockQuantity < 5)
+                {
+                    <dd class="col-sm-9">
+                        <p class="text-warning"><strong>Low in stock</strong></p>
+                        <p>Only @Product.StockQuantity left</p>
+                    </dd>
+                }
+                else
+                {
+                    <dd class="col-sm-9 text-success"><strong>In stock</strong></dd>
+                }
+
+            </dl>
+            <AddToCartButton Product="Product"></AddToCartButton>
+
+        </div>
+    </div>
+}
+
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    public string NotFoundMessage { get; set; } = string.Empty;
+
+    public Product Product { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Product = await productDataAccess.GetProductAsync(Id);
+
+        if (Product is null)
+        {
+            NotFoundMessage += "Product not found";
+        }
+    }
+}
+

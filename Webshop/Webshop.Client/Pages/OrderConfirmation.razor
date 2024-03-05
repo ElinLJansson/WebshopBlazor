@@ -1,0 +1,96 @@
+﻿@page "/order-confirmation"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@inject AuthenticationStateProvider stateProvider
+@inject Blazored.SessionStorage.ISessionStorageService sessionStorage
+@rendermode InteractiveWebAssembly
+@attribute [Authorize]
+
+@if (isLoadning)
+{
+	<div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+		<span class="visually-hidden">Loading...</span>
+	</div>
+}
+else
+{
+	<h3>Thank You For Your Order!</h3>
+
+	<div class="d-flex justify-content-center">
+		<div class="w-50">
+			@foreach (var product in orderInformation.Products)
+			{
+				<div class="mb-3 border-top border-button d-flex p-3" style="max-width: auto;">
+
+					<div class="me-auto d-flex">
+						<img src="@product.ImgURL" alt="..." style="border: 1px solid #ddd;
+																		 border-radius: 4px;
+																		 padding: 5px;
+																		 width: 150px;">
+						<div class="ms-3 mt-3">
+							<h5 class="">@product.Name</h5>
+							<p class="text-muted">Product number: @product.ProductNumber</p>
+							<p class="text-muted">Quantity: @product.Quantity</p>
+						</div>
+					</div>
+					@if (product.DiscountPercent is not null)
+					{
+						<h5 class="card-text text-decoration-line-through mx-3">@product.Price USD</h5>
+						<h5 class="card-text text-danger"><strong>@product.DiscountPrice.GetValueOrDefault().ToString("F") USD</strong></h5>
+					}
+					else
+					{
+						<h5 class="card-text"><strong>@product.Price USD</strong></h5>
+					}
+
+				</div>
+			}
+
+			<h3>Your Information</h3>
+
+			<dl class="row">
+				<dt class="col-sm-3">Name:</dt>
+				<dd class="col-sm-9">@orderInformation.Name</dd>
+
+				<dt class="col-sm-3">Email:</dt>
+				<dd class="col-sm-9">@orderInformation.Email</dd>
+
+				<dt class="col-sm-3">Address:</dt>
+				<dd class="col-sm-9">
+					<p>@orderInformation.Street</p>
+					<p>@orderInformation.City</p>
+					<p>@orderInformation.ZipCode</p>
+				</dd>
+			</dl>
+		
+		
+		</div>
+	</div>
+}
+
+@code {
+	OrderInformation orderInformation = new();
+
+	bool isLoadning = true;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var authenticationState = await stateProvider.GetAuthenticationStateAsync();
+			
+			var userId = authenticationState
+				.User
+				.Claims
+				.Where(c => c.Type == ClaimTypes.NameIdentifier)
+				.First()
+				.Value;
+
+			orderInformation = await sessionStorage.GetItemAsync<OrderInformation>(userId);
+
+			isLoadning = false;
+
+			StateHasChanged();
+		}
+	}
+}

@@ -1,0 +1,67 @@
+﻿@rendermode InteractiveServer
+
+@if (!AddOpacity)
+{
+    <div class="mb-3 border-top border-button d-flex p-3" style="max-width: auto;">
+
+        <div class="me-auto d-flex">
+            <img src="@ShoppingCartProduct.product.ImgURL" alt="..." style="border: 1px solid #ddd;
+                                                                     border-radius: 4px;
+                                                                     padding: 5px;
+                                                                     width: 150px;">
+            <div class="ms-3 mt-3">
+                <h5>@ShoppingCartProduct.product.Name</h5>
+                <p class="text-muted">Product number: @ShoppingCartProduct.product.ProductNumber</p>
+                <p class="text-muted">Quantity: @ShoppingCartProduct.quantity</p>
+            </div>
+        </div>
+        @if (ShoppingCartProduct.product.DiscountPercent is not null)
+        {
+
+            <h5 class="card-text text-decoration-line-through mx-3">@ShoppingCartProduct.product.Price USD</h5>
+            <h5 class="card-text text-danger"><strong>@ShoppingCartProduct.product.DiscountPrice.GetValueOrDefault().ToString("F") kr</strong></h5>
+        }
+        else
+        {
+            <h5 class="card-text"><strong></strong>@ShoppingCartProduct.product.Price USD</h5>
+        }
+    </div>
+}
+else
+{
+    <div class="mb-3 border-top border-button d-flex p-3 opacity-75" style="max-width: auto;">
+
+        <div class="me-auto d-flex">
+            <img src="@ShoppingCartProduct.product.ImgURL" alt="..." style="border: 1px solid #ddd;
+                                                                     border-radius: 4px;
+                                                                     padding: 5px;
+                                                                     width: 150px;">
+            <div class="ms-3 mt-3">
+                <h5>@ShoppingCartProduct.product.Name</h5>
+                <p class="text-muted">Product number: @ShoppingCartProduct.product.ProductNumber</p>
+                <p class="text-muted">Quantity: @ShoppingCartProduct.quantity</p>
+            </div>
+        </div>
+        @if (ShoppingCartProduct.product.DiscountPercent is not null)
+        {
+
+            <h5 class="card-text text-decoration-line-through mx-3">@ShoppingCartProduct.product.Price USD</h5>
+            <h5 class="card-text text-danger"><strong>@ShoppingCartProduct.product.DiscountPrice.GetValueOrDefault().ToString("F") kr</strong></h5>
+        }
+        else
+        {
+            <h5 class="card-text"><strong></strong>@ShoppingCartProduct.product.Price USD</h5>
+        }
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public (Product product, int quantity) ShoppingCartProduct { get; set; } = new();
+
+    [Parameter]
+    public bool AddOpacity { get; set; } = false;
+}

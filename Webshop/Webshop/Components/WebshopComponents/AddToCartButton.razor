@@ -1,0 +1,82 @@
+﻿@using System.Security.Claims
+@using Microsoft.AspNetCore.Identity
+@using Webshop.Data
+@inject IShoppingCartDataAccess shoppingCartDataAccess
+@inject IProductDataAccess productDataAccess
+@inject IJSRuntime js
+@rendermode InteractiveServer
+
+
+@if (Product.StockQuantity == 0)
+{
+    <button class="btn btn-secondary">Out of Stock</button>
+}
+else
+{
+    <div id="liveAlertPlaceholder"></div>
+    <button class="btn btn-primary" @onclick="AddToCart" id="liveAlertBtn">Add to Cart</button>
+}
+
+
+@code{
+    [Parameter]
+    public Product Product { get; set; } = new();
+
+    string message = string.Empty;
+    string color = string.Empty;
+    int userCartProductQuantity;
+
+
+
+    public async Task AddToCart()
+    {
+        var cart = await shoppingCartDataAccess.GetProductsFromUserCartAsync();
+
+        if (cart.Contains(Product))
+        {
+            userCartProductQuantity = await GetUserCartProductQuantity();
+
+            if (userCartProductQuantity == Product.StockQuantity)
+            {
+                message = $"Sorry! You cannot add this product. There are {Product.StockQuantity} left. You have {userCartProductQuantity} in your shopping cart.";
+                color = "warning";
+                await js.InvokeVoidAsync("appendAlert", message, color);
+                
+            }
+            else
+            {
+                await shoppingCartDataAccess.AddProductToUserCartAsync(Product);
+                message = $"Successfully added product";
+                color = "success";
+                await js.InvokeVoidAsync("appendAlert", message, color);
+            } 
+        }
+        else
+        {
+            await shoppingCartDataAccess.AddProductToUserCartAsync(Product);
+            message = $"Successfully added product";
+            color = "success";
+            await js.InvokeVoidAsync("appendAlert", message, color);
+        }
+    }
+
+    async Task<int> GetUserCartProductQuantity()
+    {
+        return await shoppingCartDataAccess.GetProductQuantityFromUserCartAsync(Product);
+    }
+}
+
+<script src="/Scripts.js" type="text/javascript"></script>
+
+
+
+
+
+
+@*
+    else if (!canAddToCart)
+    {
+        <button type="button" class="btn btn-info" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Sorry! You cannot add this product. There are @Product.StockQuantity left. You have @userCartProductQuantity in your shopping cart">Add to Cart</button>
+    }
+
+*@
