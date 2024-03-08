@@ -1,5 +1,4 @@
-﻿using Webshop.Data;
-using Webshop.Models;
+﻿using Webshop.Models;
 
 namespace Webshop.DataAccess.Interfaces;
 

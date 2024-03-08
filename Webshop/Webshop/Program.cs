@@ -2,7 +2,6 @@ using Blazored.SessionStorage;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Webshop.Client.Pages;
 using Webshop.Components;
 using Webshop.Components.Account;
 using Webshop.Data;

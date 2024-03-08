@@ -49,3 +49,27 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+.alert{
+    width: 20vw;
+}
+
+.class-fade-animation {
+    animation-name: fade-animation;
+    animation-duration: 0.6s;
+    animation-iteration-count: 1;
+}
+
+@keyframes fade-animation {
+    0% {
+        opacity:100;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+.fade {
+    transition: opacity 0.5s ease;
+}

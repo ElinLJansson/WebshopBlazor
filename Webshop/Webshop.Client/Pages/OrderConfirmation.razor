@@ -8,9 +8,11 @@
 
 @if (isLoadning)
 {
-	<div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-		<span class="visually-hidden">Loading...</span>
-	</div>
+	<div class="d-flex justify-content-center align-items-center">
+		<div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+	</div>	
 }
 else
 {
@@ -33,14 +35,38 @@ else
 							<p class="text-muted">Quantity: @product.Quantity</p>
 						</div>
 					</div>
+
 					@if (product.DiscountPercent is not null)
 					{
-						<h5 class="card-text text-decoration-line-through mx-3">@product.Price USD</h5>
-						<h5 class="card-text text-danger"><strong>@product.DiscountPrice.GetValueOrDefault().ToString("F") USD</strong></h5>
+						@if(product.Quantity == 1)
+						{
+							<div class="row text-end">
+                                <p class="card-text fs-6"><strong>@product.DiscountPrice.GetValueOrDefault().ToString("F") USD</strong></p>
+							</div>
+						}
+						else
+						{
+							<div class="row text-end">								
+                                <p class="card-text fs-6"><strong>@((product.DiscountPrice.GetValueOrDefault() * product.Quantity).ToString("F")) USD</strong></p>
+                            </div>
+						}
 					}
 					else
 					{
-						<h5 class="card-text"><strong>@product.Price USD</strong></h5>
+						if(product.Quantity == 1)
+						{
+							<div class="row text-end">
+                                <p class="card-text fs-6 mx-3"><strong>@product.Price USD</strong></p>
+							</div>
+						}
+						else
+						{
+							<div class="row text-end">
+                                <p class="card-text fs-6"><strong>@(product.Price * product.Quantity) USD</strong></p>
+							</div>
+						}
+						
+
 					}
 
 				</div>

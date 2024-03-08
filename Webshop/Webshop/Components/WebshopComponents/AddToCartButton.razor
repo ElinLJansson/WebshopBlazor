@@ -13,10 +13,10 @@
 }
 else
 {
-    <div id="liveAlertPlaceholder"></div>
     <button class="btn btn-primary" @onclick="AddToCart" id="liveAlertBtn">Add to Cart</button>
 }
 
+<script src="/Scripts.js" type="text/javascript"></script>
 
 @code{
     [Parameter]
@@ -25,8 +25,6 @@ else
     string message = string.Empty;
     string color = string.Empty;
     int userCartProductQuantity;
-
-
 
     public async Task AddToCart()
     {
@@ -66,17 +64,3 @@ else
     }
 }
 
-<script src="/Scripts.js" type="text/javascript"></script>
-
-
-
-
-
-
-@*
-    else if (!canAddToCart)
-    {
-        <button type="button" class="btn btn-info" data-bs-container="body" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="Sorry! You cannot add this product. There are @Product.StockQuantity left. You have @userCartProductQuantity in your shopping cart">Add to Cart</button>
-    }
-
-*@

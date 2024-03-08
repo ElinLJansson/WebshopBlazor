@@ -27,7 +27,6 @@ public class ShoppingCartDataAccess : IShoppingCartDataAccess
 
         if (await ProductAlredyInUserCartAsync(product))
         {
-            // kan vara egen metod IncreaseProductQuantityInUserCartByOne(Product product, ApplicationUser user)
             var shoppingCartProduct = await GetShoppingCartProducts(product);
 
             shoppingCartProduct.Quantity++;
@@ -38,7 +37,6 @@ public class ShoppingCartDataAccess : IShoppingCartDataAccess
         }
         else
         {
-            // kan vara egen metod AddNewProductToUserCart(Product product, ApplicationUser user)
             var productToAdd = new ShoppingCartProduct
             {
                 Product = product,
@@ -140,4 +138,5 @@ public class ShoppingCartDataAccess : IShoppingCartDataAccess
 
         return shoppingCartProduct;
     }
+
 }

@@ -1,9 +1,13 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Authorization
 @inject IProductDataAccess productDataAccess
+@attribute [Authorize]
 @rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
+<div>
 
+</div>
 <h1>Webshop yes</h1>
 
 <div class="container">

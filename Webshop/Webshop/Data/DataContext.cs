@@ -15,9 +15,9 @@ public class DataContext(DbContextOptions<DataContext> options) : IdentityDbCont
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Product>().HasData(
-            new Product { Id = 1, ProductNumber = 10001, Name = "Fisk", Description = "En god fisk.", Price = 9.90m, StockQuantity = 5, ImgURL = "/images/fisk.jpg" },
+            new Product { Id = 1, ProductNumber = 10001, Name = "Fisk", Description = "En god fisk.", Price = 9.90m, StockQuantity = 20, ImgURL = "/images/fisk.jpg" },
             new Product { Id = 2, ProductNumber = 10002, Name = "Gurka", Description = "En gurka som passar alla tillfällen.", Price = 15.90m, StockQuantity = 20, ImgURL = "/images/gurka.jpg" },
-            new Product { Id = 3, ProductNumber = 10003, Name = "Husvagn", Description = "Rymlig och mordern husvagn för hela familjen.", Price = 99.90m, StockQuantity = 8, ImgURL = "/images/husvagn.jpg" },
+            new Product { Id = 3, ProductNumber = 10003, Name = "Husvagn", Description = "Rymlig och mordern husvagn för hela familjen.", Price = 99.90m, StockQuantity = 10, ImgURL = "/images/husvagn.jpg" },
             new Product { Id = 4, ProductNumber = 10004, Name = "Sprit", Description = "Kan innehålla spår av alkohol.", Price = 899.90m, StockQuantity = 10, ImgURL = "/images/sprit.jpg" },
             new Product { Id = 5, ProductNumber = 10005, Name = "Kassett", Description = "En fossil, väl omhändertagen.", Price = 100, DiscountPercent = 10 ,StockQuantity = 1, ImgURL = "/images/kassett.jpg" },
             new Product { Id = 6, ProductNumber = 10006, Name = "Paraply", Description = "Fullt funktionellt paraply, jag lovar.", Price = 79.90m, StockQuantity = 2, ImgURL = "/images/paraply.jpg" },

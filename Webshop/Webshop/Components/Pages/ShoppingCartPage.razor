@@ -1,5 +1,6 @@
 ﻿@page "/shopping-cart"
 @using System.Security.Claims
+@using Blazored.LocalStorage
 @using Microsoft.AspNetCore.Identity
 @using System.ComponentModel.DataAnnotations
 @using Webshop.Client.Models
@@ -13,26 +14,17 @@
 @attribute [Authorize]
 @rendermode InteractiveServer
 
-<h3>ShoppingCart</h3>
-
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center">    
     <div class="w-50">
+        <h3 class="mb-3">ShoppingCart</h3>
+        <hr />
         @if (Products.Count > 0)
         {
             @foreach (var shoppingCartEntry in ShoppingCart)
             {
                 <ShoppingCartProductCard ShoppingCartProduct="@shoppingCartEntry"></ShoppingCartProductCard>
             }
-
-
-            @if (RemovedProducts.Count > 0)
-            {
-                <h3 class="my-3">Sorry!</h3>
-                @foreach (var removedProduct in RemovedProducts)
-                {
-                    <ShoppingCartProductCard ShoppingCartProduct="@removedProduct" AddOpacity="@true"></ShoppingCartProductCard>
-                }
-            }
+            <p class="my-3"><em>Products may have been removed from your shopping cart. Due to out of stock.</em></p>
 
             <EditForm FormName="CustumerForm" Model="@customerInformation" OnValidSubmit="@GoToConfirmation">
                 <DataAnnotationsValidator />
@@ -76,7 +68,8 @@
         }
         else
         {
-            <h5 class="mt-3"><strong>Shopping Cart Empty</strong></h5>
+            <h5 class="my-3"><strong>Shopping Cart Empty</strong></h5>
+            <p class="my-3"><em>Products may have been removed from your shopping cart. Due to out of stock.</em></p>
         }
        
     </div>
@@ -88,7 +81,7 @@
 
     List<(Product product, int quantity)> ShoppingCart = new();
 
-    List<(Product product, int quantity)> RemovedProducts = new();
+    string userId;
 
     private CustomerInformation customerInformation = new CustomerInformation();
 
@@ -97,6 +90,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        userId = await userAccess.GetCurrentUserId();
+
         Products = await shoppingCartDataAccess.GetProductsFromUserCartAsync();
 
         foreach(var product in Products)
@@ -104,7 +99,6 @@
             int quantity = await GetProductQuantityFromUserCart(product);
             ShoppingCart.Add((product, quantity));
         }
-
         await RemoveAnyExcessProducts();
     }
 
@@ -114,14 +108,12 @@
         {
             if (cartProduct.product.StockQuantity == 0)
             {
-                //RemovedProducts.Add((shoppingCart.product, shoppingCart.quantity));
                 await shoppingCartDataAccess.RemoveProductFromUserCartAsync(cartProduct.product);
             }
             else if (cartProduct.product.StockQuantity < cartProduct.quantity)
             {
                 var excessProductQuantity = cartProduct.quantity - cartProduct.product.StockQuantity;
-                //RemovedProducts.Add((shoppingCart.product, excessProductQuantity));
-
+                
                 await shoppingCartDataAccess.ReduceProductQuantityFromUserCartAsync(cartProduct.product, excessProductQuantity);
             }
         }
@@ -148,9 +140,7 @@
                     Quantity = i.quantity   
                     
                 }).ToList();
-
-        var userId = await userAccess.GetCurrentUserId();
-
+   
         await sessionStorage.SetItemAsync(userId, orderInformation);
 
         await EndShoppingSession();
@@ -164,7 +154,6 @@
         {
             await productDataAccess.UpdateProductStockQuantityAsync(shoppingCart.product, shoppingCart.quantity);
         }
-
         await shoppingCartDataAccess.EmptyUserCartAsync();
     }
 
@@ -194,6 +183,8 @@
         public string ZipCode { get; set; }
     }
 
+    
 }
+           
 
 

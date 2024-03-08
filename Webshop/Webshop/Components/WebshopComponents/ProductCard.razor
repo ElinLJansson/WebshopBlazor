@@ -1,5 +1,14 @@
 ﻿<div class="card m-4" style="width: 18rem;">
-    <a href="product/@Product.Id"><img src="@Product.ImgURL" class="card-img-top" alt="..."></a>
+    <a href="product/@Product.Id">
+        @if (Product.StockQuantity == 0)
+        {
+            <img src="@Product.ImgURL" class="card-img-top opacity-50" alt="...">
+        }
+        else
+        {
+            <img src="@Product.ImgURL" class="card-img-top" alt="...">
+        }
+    </a>
     <div class="card-body">
         <a href="product/@Product.Id"><h5 class="card-title">@Product.Name</h5></a>
         <div class="d-flex mb-3">
@@ -14,9 +23,9 @@
             }
         </div>
         <AddToCartButton Product="Product"></AddToCartButton>
-
     </div>
 </div>
+
 @code {
     [Parameter]
     public Product Product { get; set; } = new();
