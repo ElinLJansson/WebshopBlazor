@@ -17,12 +17,13 @@ else
                 @if (Product.DiscountPercent is not null)
                 {
                     <h2 class="me-auto">@Product.Name</h2>
-                    <CurrencySelect Product="Product"></CurrencySelect>
+                    <h2 class="text-decoration-line-through mx-3">@Product.Price.ToString("F")</h2>
+                    <h2 class="text-danger d-flex">@Product.DiscountPrice.GetValueOrDefault().ToString("F") USD</h2>
                 }
                 else
                 {
                     <h2 class="me-auto">@Product.Name</h2>
-                    <CurrencySelect Product="Product"></CurrencySelect>
+                    <h2 class="d-flex">@Product.Price USD</h2>
                 }               
             </div>
 
